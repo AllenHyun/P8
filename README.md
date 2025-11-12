@@ -130,4 +130,77 @@ Después de haber creado todos los puntos y de representarlos, se dibujarán lí
 cargarRutas(airportMap, parentGlobo);
 ```
 
+### createEarth
+
+La función lo que hace es crear la tierra de la misma forma que se crearon planetas en la práctica 7. Lo que hace es recibir la textura, opcionalmente con relieve, y con un radio específico. Se utilizará un material que permite sombras y reflejos, para que parezca más realista. Posteriormente, se aplica la textura que ha sido usada y se procura usar un color que no cause problemas a la hora de que la textura cargue. 
+
+Si se recibe que se desea tener relieve, se activa y se controla su escala para que no sea algo exagerado, pero también para que sea posible notarlo. Se creará la geometría de la esfera y se devuelve la combinación de amterial y geometría, formando la tierra para poder mostrar los datos sobre ella.
+
+``` javascript
+function createEarth(texture, displacement = undefined, radius = 3) {
+  const mat = new THREE.MeshPhongMaterial({ map: texture, color: 0xffffff });
+  if (displacement) {
+    mat.displacementMap = displacement;
+    mat.displacementScale = 0.1;
+  }
+  const geometry = new THREE.SphereGeometry(radius, 64, 64);
+  return new THREE.Mesh(geometry, mat);
+}
+```
+
 ### cargarRutas
+
+La función se encarga de dibujas las rutas entre los diferentes aeropuertos a partir de los datos obtenido de OpenFlight (2014). Dibujará una línea amarilla entre ambos puntos con una curva. Recibe el mapa con 'IATA: {latitud, longitud}' y la esfera que ha sido creada. Los datos serán procesados de la misma manera que con aeropuertosYrutas, con la diferencia del contenido en cada línea. Se consigue el código IATA del origen (s) y del destino (d), eliminando comillas y espacios que pudieran haber.
+
+``` javascript
+fetch("src/routes.dat")
+    .then((res) => res.text())
+    .then((data) => {
+      const lines = data.split("\n");
+      lines.forEach((line) => {
+        const parts = line.split(",");
+        if (parts.length > 5) {
+          const s = parts[2].replace(/"/g, "").trim();
+          const d = parts[4].replace(/"/g, "").trim();
+```
+
+Si ambos aeropuertos están definidos, se intenta dibujar la conexión que marca la ruta seguida en 2014 entre ellos. Se convierten las coordenadas de los aeropuertos en los puntos de inicio y final del viaje, usando la función latitudYlongitud. Las líneas se elevan ligeramente.
+
+``` javascript
+ if (airportMap[s] && airportMap[d]) {
+            const start = latitudYlongitud(airportMap[s].latitud, airportMap[s].longitud, radio_globo, 0.015);
+            const end = latitudYlongitud(airportMap[d].latitud, airportMap[d].longitud, radio_globo, 0.015);
+```
+
+Para poder crear la curvatura del arco, se define un punto intermedio, el que estará en lo más alto de la línea. Se normaliza para poder colocar el punto en la esfera y que no se quede dentro de ella o a una distancia mayor de la que permite la cámara.
+
+``` javascript
+const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+mid.normalize().multiplyScalar(radio_globo + start.distanceTo(end) * 0.4);
+```
+
+Se creará una curva entre el origen y el destino con QuadraticBezierCurve3() y el punto medio creado. Para que quede bien dibujado, la línea se divide en 20 puntos. Para finalizar con la función, se pinta la línea de amarillo y se le da una cierta opacidad (0.5), luego se añade al planeta.
+
+``` javascript
+const curva = new THREE.QuadraticBezierCurve3(start, mid, end);
+const g = new THREE.BufferGeometry().setFromPoints(curva.getPoints(20));
+const linea = new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.5 }));
+parentGlobo.add(linea);
+```
+
+### Animate
+
+Se muestra la tierra rotando lentamente durante toda la ejecución si existe. Se puede mover la cámara, dar vueltas alrededor del planeta, haciendo click derecho. Con la rueda se puede hacer zoom, permite alejarse todo lo posible, pero no permite meterse dentro del planeta. Renderiza la escena. Este bucle se repite continuamente.
+
+``` javascript
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (globe) {
+    globe.rotation.y += 0.0005;
+  }
+  camcontrols.update();
+  renderer.render(scene, camera);
+}
+```
+
