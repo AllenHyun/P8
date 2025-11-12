@@ -15,7 +15,14 @@ La tarea consistirá en proponer una visualización de datos de acceso abierto q
 
 ## Índice de contenidos
 
-- [Ejemplo de índice](#ejemplo)
+- [Fondo](#fondo)
+- [Luces](#luces)
+- [Texturas](#texturas)
+- [latitudYlongitud](#latitudylongitud)
+- [aeropuertosYrutas](#aeropuertosyrutas)
+- [createEarth](#createEarth)
+- [cargarRutas](#cargarrutas)
+- [Animate](#animate)
   
 
 ## Tareas
