@@ -18,6 +18,7 @@ La tarea consistirá en proponer una visualización de datos de acceso abierto q
 - [Fondo](#fondo)
 - [Luces](#luces)
 - [Texturas](#texturas)
+- [GUI](#gui)
 - [latitudYlongitud](#latitudylongitud)
 - [aeropuertosYrutas](#aeropuertosyrutas)
 - [createEarth](#createEarth)
@@ -64,6 +65,25 @@ const tx2 = new THREE.TextureLoader().load("src/textura_night.jpg");
 
 const dm2 = new THREE.TextureLoader().load("src/gebco_bathy.5400x2700_8bit.jpg");
 ```
+
+### GUI
+
+Además se implementó la opción de poder cambiar entre el día y la noche. Esto se hizo por medio de un gui que comienza por defecto de noche. Si se pasa el modo a 'Día', el material usado cambiará a la tx1 (día) y se cambia la intensidad de la luz. 
+
+Si se regresa el modo noche, la textura pasa a ser tx2 y la intensidad de la luz direccional será de 3.5.
+
+``` javascript
+gui.add({ modo: "Noche" }, "modo", ["Día", "Noche"]).onChange((v) => {
+    if (v === "Día") {
+      globe.material.map = tx1;
+      directionalLight.intensity = 1.0;
+    } else {
+      globe.material.map = tx2;
+      directionalLight.intensity = 3.5;
+    }
+    globe.material.needsUpdate = true;
+  });
+``` 
 
 ### latitudYlongitud
 
