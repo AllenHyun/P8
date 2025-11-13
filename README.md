@@ -6,7 +6,7 @@ María Cabrera Vérgez
 
 ## Enlaces
 
-[- Vídeo de muestra](#https://drive.google.com/file/d/1RnuSecwI-rvY3sXBPigopEzAdLx56CuY/view?usp=sharing)
+[- Vídeo de muestra](https://drive.google.com/file/d/1RnuSecwI-rvY3sXBPigopEzAdLx56CuY/view?usp=sharing)
 
 [- Codesandbox con el código](https://codesandbox.io/p/sandbox/practica-8-final-version-fyfrj3)
 ## Tareas a realizar
