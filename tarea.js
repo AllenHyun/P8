@@ -1,11 +1,14 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GUI } from "lil-gui";
 
 let scene, renderer, camera, globe;
 let camcontrols;
 let airportPoints = new THREE.Group();
 
 const radio_globo = 3;
+
+const gui = new GUI();
 
 init();
 animate();
@@ -33,19 +36,33 @@ function init() {
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
   scene.add(ambientLight);
 
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 3.5);
   directionalLight.position.set(5, 5, 5); 
   scene.add(directionalLight);
 
   const tx1 = new THREE.TextureLoader().load("src/earthmap1k.jpg");
+  const tx2 = new THREE.TextureLoader().load("src/textura_night.jpg");
+
   const dm2 = new THREE.TextureLoader().load("src/gebco_bathy.5400x2700_8bit.jpg");
 
-  globe = createEarth(tx1, dm2, radio_globo);
+  globe = createEarth(tx2, dm2, radio_globo);
   scene.add(globe);
 
   globe.add(airportPoints);
 
   aeropuertosYrutas(globe);
+
+  gui.add({ modo: "Noche" }, "modo", ["Día", "Noche"]).onChange((v) => {
+    if (v === "Día") {
+      globe.material.map = tx1;
+      directionalLight.intensity = 1.0;
+    } else {
+      globe.material.map = tx2;
+      directionalLight.intensity = 3.5;
+    }
+    globe.material.needsUpdate = true;
+  });
+
 }
 
 function latitudYlongitud(latitud, longitud, radius, offset = 0) {
@@ -66,7 +83,7 @@ function aeropuertosYrutas(parentGlobo) {
     .then((data) => {
       const lines = data.split("\n");
       let airportMap = {};
-
+    
       lines.forEach((line) => {
         const parts = line.split(",");
         if (parts.length > 7) {
@@ -76,13 +93,13 @@ function aeropuertosYrutas(parentGlobo) {
           if (iata && !isNaN(latitud) && !isNaN(longitud)) {
             airportMap[iata] = { latitud, longitud };
 
-            const pos = latitudYlongitud(latitud, longitud, radio_globo, 0.05); 
+            const pos = latitudYlongitud(latitud, longitud, radio_globo, 0.2); 
             const geo = new THREE.SphereGeometry(0.01, 6, 6);
             const mat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
             const mesh = new THREE.Mesh(geo, mat);
             mesh.position.copy(pos);
-            
             airportPoints.add(mesh);
+
           }
         }
       });
